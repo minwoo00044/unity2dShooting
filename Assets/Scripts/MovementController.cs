@@ -1,6 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using UnityEngine;
+
+using static Unity.IO.LowLevel.Unsafe.AsyncReadManagerMetrics;
+
 public class MovementController : MonoBehaviour
 {
     private Vector3 firstTarget;
@@ -11,6 +15,11 @@ public class MovementController : MonoBehaviour
     public GameObject sinBullet;
     public GameObject straitBullet;
 
+    public int poolSize = 30;
+    public List<GameObject> bulletObjectPool;
+    public List<GameObject> straitObjectPool;
+    public List<GameObject> sinObjectPool;
+
     public int fIreCount;
     public bool isShoot;
     [Range(0, 3)]
@@ -18,10 +27,39 @@ public class MovementController : MonoBehaviour
 
     public Camera mainCamera;
 
+    public GameObject bullets;
+
     private void Start()
     {
         mainCamera = Camera.main;
+        bullets = GameObject.FindWithTag("Container");
+        bulletObjectPool = new List<GameObject>();
+        straitObjectPool = new List<GameObject>();
+        sinObjectPool = new List<GameObject>();
 
+
+        for (int i = 0; i < poolSize; i++)
+        {
+            GameObject instance = Instantiate(bullet);
+            instance.GetComponent<EnemyBullet_damage>().movementController = this;
+            instance.SetActive(false);
+            instance.transform.position = gameObject.transform.position;
+            bulletObjectPool.Add(instance);
+        }
+        for (int i = 0; i < poolSize; i++)
+        {
+            GameObject instance = Instantiate(sinBullet);
+            instance.SetActive(false);
+            instance.transform.position = gameObject.transform.position;
+            sinObjectPool.Add(instance);
+        }
+        for (int i = 0; i < poolSize; i++)
+        {
+            GameObject instance = Instantiate(straitBullet);
+            instance.SetActive(false);
+            instance.transform.position = gameObject.transform.position;
+            straitObjectPool.Add(instance);
+        }
     }
     private void Update()
     {
@@ -84,7 +122,7 @@ public class MovementController : MonoBehaviour
         }
         else if (stopTime == 0)
         {
-            Destroy(gameObject);
+            gameObject.SetActive(false);
         }
 
     }
@@ -103,8 +141,13 @@ public class MovementController : MonoBehaviour
         {
             if (isShoot)
             {
-                GameObject instanceBullet = Instantiate(bullet);
-                instanceBullet.transform.position = transform.position;
+                if (bulletObjectPool.Count > 0)
+                {
+                    GameObject instance = bulletObjectPool[0];
+                    instance.transform.position = transform.position;
+                    instance.SetActive(true);
+                    bulletObjectPool.Remove(instance);
+                }
                 yield return new WaitForSeconds(fireTime / (float)fIreCount);
             }
 
@@ -122,13 +165,19 @@ public class MovementController : MonoBehaviour
             {
                 for (int j = 0; j < 3; j++)
                 {
-                    GameObject instanceBullet = Instantiate(sinBullet);
-                    instanceBullet.transform.position = transform.position;
-                    instanceBullet.transform.rotation = Quaternion.Euler(0, 0, 20 * i);
-                }
+                    if (sinObjectPool.Count > 0)
+                    {
+                        GameObject instance = sinObjectPool[0];
+                        instance.transform.position = transform.position;
+                        instance.transform.rotation = Quaternion.Euler(0, 0, 20 * i);
+                        instance.SetActive(true);
+                        sinObjectPool.Remove(instance);
+                    }
 
+                }
+                yield return new WaitForSeconds(fireTime / (float)fIreCount);
             }
-            yield return new WaitForSeconds(fireTime / (float)fIreCount);
+
         }
     }
 
@@ -139,15 +188,25 @@ public class MovementController : MonoBehaviour
         {
             if (isShoot)
             {
-                GameObject instanceBullet = Instantiate(straitBullet);
-                instanceBullet.transform.position = transform.position;
-                instanceBullet.transform.rotation = Quaternion.Euler(new Vector3(0, 0, -30f));
+                for (int j = 0; j < poolSize; j++)
+                {
+                    if (straitObjectPool.Count > 0)
+                    {
+                        GameObject instance = straitObjectPool[0];
+                        instance.transform.position = transform.position;
+                        instance.transform.rotation = Quaternion.Euler(new Vector3(0, 0, -30f));
+                        instance.SetActive(true);
+                        straitObjectPool.Remove(instance);
 
-                GameObject instanceBullet1 = Instantiate(straitBullet);
-                instanceBullet1.transform.position = transform.position;
-                instanceBullet1.transform.rotation = Quaternion.Euler(new Vector3(0, 0, -150f));
+                        GameObject instance1 = straitObjectPool[0];
+                        instance1.transform.position = transform.position;
+                        instance1.transform.rotation = Quaternion.Euler(new Vector3(0, 0, -150f));
+                        instance1.SetActive(true);
+                        straitObjectPool.Remove(instance1);
+                    }
+                    yield return new WaitForSeconds(fireTime / ((float)fIreCount));
+                }
 
-                yield return new WaitForSeconds(fireTime / ((float)fIreCount));
             }
 
         }
@@ -162,12 +221,22 @@ public class MovementController : MonoBehaviour
             {
                 for (int j = 1; j < 25; j++)
                 {
-                    GameObject instanceBullet = Instantiate(straitBullet);
-                    instanceBullet.transform.position = transform.position;
-                    instanceBullet.transform.rotation = Quaternion.Euler(new Vector3(0, 0, 15f * j));
+
+
+                    if (straitObjectPool.Count > 0)
+                    {
+                        GameObject instance = straitObjectPool[0];
+                        instance.transform.position = transform.position;
+                        instance.transform.rotation = Quaternion.Euler(new Vector3(0, 0, 15f * j));
+                        instance.SetActive(true);
+                        straitObjectPool.Remove(instance);
+                    }
+
+
 
                 }
                 yield return new WaitForSeconds(0.1f);
+
             }
             yield return new WaitForSeconds(fireTime / (float)fIreCount);
         }

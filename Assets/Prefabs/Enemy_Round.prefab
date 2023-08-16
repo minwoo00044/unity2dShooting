@@ -124,10 +124,15 @@ MonoBehaviour:
   bullet: {fileID: 50424686288206443, guid: bf1425a38fd5415439b04a4178e2be12, type: 3}
   sinBullet: {fileID: 5974858862847606409, guid: 808a45f001f7da948907bec859815e92, type: 3}
   straitBullet: {fileID: 50424686288206443, guid: 8afd48f3b2ac3504e959fab08b85c611, type: 3}
+  poolSize: 100
+  bulletObjectPool: []
+  straitObjectPool: []
+  sinObjectPool: []
   fIreCount: 10
   isShoot: 1
   fIreType: 3
   mainCamera: {fileID: 0}
+  bullets: {fileID: 0}
 --- !u!114 &-2804775900234744515
 MonoBehaviour:
   m_ObjectHideFlags: 0

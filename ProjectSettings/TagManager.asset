@@ -9,6 +9,8 @@ TagManager:
   - EnemyBullet
   - Bullet
   - Item
+  - Container
+  - Remover
   layers:
   - Default
   - TransparentFX

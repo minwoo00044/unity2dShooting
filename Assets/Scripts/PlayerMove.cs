@@ -13,6 +13,8 @@ public class PlayerMove : MonoBehaviour
 
     public GameObject hitFX;
     public AudioClip hitSound;
+
+    public VariableJoystick joystick;
     [SerializeField]
     private int _hp;
     public int hp
@@ -33,6 +35,8 @@ public class PlayerMove : MonoBehaviour
 
     void Start()
     {
+
+
         mainCamera = Camera.main;
 
         playerWidth = (boundery.GetComponent<MeshRenderer>().bounds.extents.x) * 2;
@@ -41,9 +45,13 @@ public class PlayerMove : MonoBehaviour
 
     void Update()
     {
+#if UNITY_ANDROID
+        float h = joystick.Horizontal;
+        float v = joystick.Vertical;
+#elif UNITY_EDITOR || UNITY_STANDALONE
         float h = Input.GetAxis("Horizontal");
         float v = Input.GetAxis("Vertical");
-
+#endif
         Vector3 dir = Vector3.right * h + Vector3.up * v;
         Vector3 newPos = transform.position + dir * speed * Time.deltaTime;
 

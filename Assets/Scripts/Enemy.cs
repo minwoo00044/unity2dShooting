@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class Enemy : MonoBehaviour
@@ -25,7 +26,12 @@ public class Enemy : MonoBehaviour
                 instanceDestroyFX.transform.position = transform.position;
 
                 SoundManager.Instance.PlaySound(deathClip);
-                Destroy(gameObject);
+                gameObject.SetActive(false);
+                if(gameObject.transform.parent != null && gameObject.transform.parent.name == "TopPosi")
+                {
+                    TopPosiCreate topPosiCreate = gameObject.transform.parent.GetComponent<TopPosiCreate>();
+                    topPosiCreate.enemyObjectPool.Add(gameObject);
+                }
             }
         }
 

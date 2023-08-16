@@ -16,6 +16,7 @@ public class Bullet : MonoBehaviour
     public Enemy enemy;
     public PlayerMove playerMove;
     public AudioClip clip;
+
     // 위로 날아가기
 
     private void Start()
@@ -23,12 +24,17 @@ public class Bullet : MonoBehaviour
         player = GameObject.FindGameObjectWithTag("Player");
         playerMove = player.GetComponent<PlayerMove>();
         //transform.position = player.transform.position;
-
-        Destroy(gameObject, 2f);
+        StartCoroutine(returnPool());
+    }
+    private void OnEnable()
+    {
+        StartCoroutine(returnPool());
     }
     void Update()
     {
+        
         transform.Translate(dir * speed * Time.deltaTime, Space.Self);
+        
        //transform.position += dir * speed * Time.deltaTime;
     }
 
@@ -47,13 +53,19 @@ public class Bullet : MonoBehaviour
             {
                 enemy.hp--;
             }
-
-
-
-            Destroy(gameObject);
+            PlayerFire playerFire = player.gameObject.GetComponent<PlayerFire>();
+            gameObject.SetActive(false);
+            playerFire.bulletObjectPool.Add(gameObject);
         }
 
 
+    }
+    IEnumerator returnPool()
+    {
+        yield return new WaitForSeconds(2f);
+        PlayerFire playerFire = player.gameObject.GetComponent<PlayerFire>();
+        gameObject.SetActive(false);
+        playerFire.bulletObjectPool.Add(gameObject);
     }
 
 }

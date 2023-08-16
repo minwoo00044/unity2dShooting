@@ -9,6 +9,11 @@ using UnityEngine;
 
 //목표2 : 아이템을 먹었다면, 스킬 레벨이 올라간다.
 //속성 : 스킬레벨
+//오브젝트 풀링
+//필요 : 불릿 오브젝트 개수, 풀 배열
+//1. 풀 사이즈 만큼 배열 생성
+//2. 불릿 게임 오브젝트를 생성한다.
+//3. 생성한 게임 오브젝트를 풀에 넣는다.
 public class PlayerFire : MonoBehaviour
 {
     public GameObject bullet;
@@ -18,23 +23,45 @@ public class PlayerFire : MonoBehaviour
     public AudioClip fireSound;
     // Update is called once per frame
 
-    void Update()
-    {
-        //1. 입력 받기
-        if (Input.GetKeyDown(KeyCode.Z))
-        {
-            if(skillLevel > 3)
-                skillLevel = 3;
-            // 2. 총알 만들기
-            SoundManager.Instance.PlaySound(fireSound, 0.3f);
-            ExcuteSkill(skillLevel);
+    public int poolSize = 100;
+    //GameObject[] bulletObjectPool;
+    public List<GameObject> bulletObjectPool;
 
+    public Transform gun;
+
+    private void Start()
+    {
+        //bulletObjectPool = new GameObject[poolSize];
+        bulletObjectPool = new List<GameObject> ();
+        for (int i = 0; i < poolSize; i++)
+        {
+            GameObject instance = Instantiate(bullet);
+            instance.SetActive(false);
+            instance.transform.parent = gun;
+            bulletObjectPool.Add(instance);
         }
     }
 
-    private void ExcuteSkill(int _skillLevel)
+    void Update()
     {
-        switch (_skillLevel)
+#if UNITY_EDITOR || UNITY_STANDALONE
+        if (Input.GetKeyDown(KeyCode.Z))
+        {
+            if (skillLevel > 3)
+                skillLevel = 3;
+            // 2. 총알 만들기
+            SoundManager.Instance.PlaySound(fireSound, 0.3f);
+            ExcuteSkill();
+        }
+#elif UNITY_ANDROID
+#endif
+        //1. 입력 받기
+
+    }
+
+    public void ExcuteSkill()
+    {
+        switch (skillLevel)
         {
             case 0:
                 ExcuteSkill_1();
@@ -53,18 +80,46 @@ public class PlayerFire : MonoBehaviour
         //한 개의 총알이 발사 된다.
         void ExcuteSkill_1()
         {
-            GameObject bulletGameObject = Instantiate(bullet);
+            //for(int i = 0; i < poolSize; i++)
+            //{
+            //    GameObject instace = bulletObjectPool[i];
+            //    if (!instace.activeSelf)
+            //    {
+            //        instace.SetActive(true);
+            //        instace.transform.position = gunPos.transform.position;
+            //        break;
+            //    }
+            //}
+            if(bulletObjectPool.Count > 0)
+            {
+                GameObject instance = bulletObjectPool[0];
+                instance.transform.position = gunPos.transform.position;
+                instance.SetActive(true);
 
-            bulletGameObject.transform.position = gunPos.transform.position;
+                bulletObjectPool.Remove(instance);
+            }
+
         }
         //두 개의 총알이 발사된다.
         void ExcuteSkill_2()
         {
 
-            GameObject bulletGameObject0 = Instantiate(bullet);
-            GameObject bulletGameObject1 = Instantiate(bullet);
-            bulletGameObject0.transform.position = gunPos.transform.position + new Vector3(-0.5f, 0, 0);
-            bulletGameObject1.transform.position = gunPos.transform.position + new Vector3(0.5f, 0, 0);
+            if (bulletObjectPool.Count > 0)
+            {
+                GameObject instance = bulletObjectPool[0];
+                instance.transform.position = gunPos.transform.position;
+                instance.SetActive(true);
+
+                bulletObjectPool.Remove(instance);
+            }
+            if (bulletObjectPool.Count > 0)
+            {
+                GameObject instance = bulletObjectPool[0];
+                instance.transform.position = gunPos.transform.position;
+                instance.SetActive(true);
+
+                bulletObjectPool.Remove(instance);
+            }
         }
 
         void ExcuteSkill_3()
